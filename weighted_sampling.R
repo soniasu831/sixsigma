@@ -1,0 +1,67 @@
+# %% load in libraries and source data #####
+library(dplyr) # data wrangling
+library(readr) # reading csv file
+library(janitor) # easy crosstabulation
+
+# data source
+source = "buses.csv" 
+dat = source %>% read_csv()
+
+# convert from excel serial dates if date is available
+dat = dat %>% mutate(
+  date_published_or_updated = date_published_or_updated %>% as.numeric() %>% as.Date(origin = "1899-12-30")
+  )
+
+# %% getSamp function #####
+
+#' a function to create weighted samples of data
+#' @param data a tibble containing the dataset
+#' @param sample_size desired number of observations in output sample
+#' @param rows a vector containing the row numbers of rows to duplicate
+#' @param num_duplicates a vector containing the number of duplicate entries for each row in `rows`
+#' @import dplyr
+getSamp = function(data, sample_size, rows, num_duplicates){
+
+  # test values
+  # data = dat[which(dat$state == "WV"), ] # only the data from WV
+  # sample_size = dim(data)[1] # keep total number of buses the same
+  # rows = c(3,4,5,18,19,20)
+  # num_duplicates = rep(2, 6)
+
+  # add in the duplicate rows
+  rows_with_dup = rep(rows, times = num_duplicates)
+  weighted_data = bind_rows(data, data[rows_with_dup, ])
+
+  # create the sample of interest
+  output = weighted_data %>% sample_n(size = sample_size, replace = TRUE)
+
+  return(output)
+
+}
+
+# %% example code #####
+
+data = dat[which(dat$state == "WV"), ] # only the data from WV
+sample_size = dim(data)[1] # keep total number of buses the same
+rows = c(3,4,5,18,19,20)
+num_duplicates = rep(2, 6)
+
+tabyl(data$bus_manufacturer)
+#  data$bus_manufacturer  n    percent valid_percent
+#              Blue Bird 10 0.34482759    0.35714286
+#             GreenPower  3 0.10344828    0.10714286
+#                 IC Bus  2 0.06896552    0.07142857
+#             Micro Bird  1 0.03448276    0.03571429
+#     Thomas Built Buses 12 0.41379310    0.42857143
+#                   <NA>  1 0.03448276            NA
+
+output = getSamp(data, sample_size, rows, num_duplicates)
+
+tabyl(output$bus_manufacturer)
+#  output$bus_manufacturer  n    percent valid_percent
+#                Blue Bird  6 0.20689655    0.21428571
+#               GreenPower  1 0.03448276    0.03571429
+#                   IC Bus  2 0.06896552    0.07142857
+#               Micro Bird  1 0.03448276    0.03571429
+#       Thomas Built Buses 18 0.62068966    0.64285714
+#                     <NA>  1 0.03448276            NA
