@@ -84,7 +84,7 @@ run_single_anova <- function(df, response_col = "base_price", factor_col, alpha 
 }
 
 # ===================================================== 
-# Usage (with your uploaded data) 
+# Usage (with uploaded data) 
 # =====================================================
 df <- read.csv("buses.csv")
 
