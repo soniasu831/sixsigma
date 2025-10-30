@@ -48,7 +48,7 @@ run_grouped_anova <- function(df, group_by, factor_col, response_col = "base_pri
     sub_df <- grouped_data[[g]]
     
     # Skip small groups or single-level factors
-    if (nrow(sub_df) < 3 || nlevels(sub_df[[factor_col]]) < 2) {
+    if (nrow(sub_df) < 5 || nlevels(sub_df[[factor_col]]) < 3) {
       next
     }
     
@@ -110,10 +110,26 @@ results_table_2 <- run_grouped_anova(
   response_col = "base_price"
 )
 
-# Example 3: Run ANOVA by manufacturer within each type
+# Example 3: Run ANOVA by bus type within if special needs
 results_table_3 <- run_grouped_anova(
   df,
-  group_by = "bus_type",
+  group_by = "special_needs_bus",
+  factor_col = "bus_type",
+  response_col = "base_price"
+)
+
+# Example 4: Run ANOVA by state within each year
+results_table_4 <- run_grouped_anova(
+  df,
+  group_by = "purchase_year",
+  factor_col = "bus_type",
+  response_col = "base_price"
+)
+
+# Example 5: Run ANOVA by bus manufacturer within each year
+results_table_5 <- run_grouped_anova(
+  df,
+  group_by = "purchase_year",
   factor_col = "bus_manufacturer",
   response_col = "base_price"
 )
