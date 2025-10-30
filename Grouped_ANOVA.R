@@ -133,3 +133,11 @@ results_table_5 <- run_grouped_anova(
   factor_col = "bus_manufacturer",
   response_col = "base_price"
 )
+
+# Example 6: Run ANOVA by bus manufacturer within each state
+results_table_6 <- run_grouped_anova(
+  df,
+  group_by = "state",
+  factor_col = "bus_type",
+  response_col = "base_price"
+)
