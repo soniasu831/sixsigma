@@ -141,3 +141,37 @@ results_table_6 <- run_grouped_anova(
   factor_col = "bus_type",
   response_col = "base_price"
 )
+
+# Install required packages if not already installed
+# install.packages(c("ggplot2", "gridExtra"))
+
+library(ggplot2)
+library(grid)
+library(gridExtra)
+
+# Function to save a data frame as an image
+save_table_as_image <- function(df, title, filename) {
+  
+  # Open a PNG device with larger width
+  png(filename, width = 5000, height = 1200, res = 150)  # Increased width and resolution
+  
+  # Create a table grob
+  table_grob <- tableGrob(df, rows = NULL)
+  
+  # Add a title
+  title_grob <- textGrob(title, gp = gpar(fontsize = 16, fontface = "bold"))
+  
+  # Combine title and table
+  combined <- arrangeGrob(title_grob, table_grob, ncol = 1, heights = c(0.2, 1))
+  
+  # Save as PNG
+  ggsave(filename, combined, width = 15, height = 4)
+}
+
+# Example usage for your results
+save_table_as_image(results_table_1, "ANOVA by State within Manufacturer", "anova_table_1.png")
+save_table_as_image(results_table_2, "ANOVA by State within Type", "anova_table_2.png")
+save_table_as_image(results_table_3, "ANOVA by Bus Type within Special Needs", "anova_table_3.png")
+save_table_as_image(results_table_4, "ANOVA by State within Year", "anova_table_4.png")
+save_table_as_image(results_table_5, "ANOVA by Manufacturer within Year", "anova_table_5.png")
+save_table_as_image(results_table_6, "ANOVA by Bus Type within State", "anova_table_6.png")

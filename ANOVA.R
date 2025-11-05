@@ -110,7 +110,7 @@ dealer_results <- run_single_anova(df, response_col = "base_price", factor_col =
 
 price_per_seat_results <-run_single_anova(df, response_col = "base_price", factor_col = "price_per_seat")
 
-# # Split the data by state and then run ANOVA by another variable
+## this didn't wokr correctly to Split the data by state and then run ANOVA by another variable
 # state_anova_results <- df %>%
 #   split(.$state) %>%
 #   lapply(function(sub_df) {
@@ -123,3 +123,69 @@ price_per_seat_results <-run_single_anova(df, response_col = "base_price", facto
 #       factor_col = "bus_manufacturer"
 #     )
 #   })
+
+## this didn't work correctly to make a summary table
+# Create a summary data frame
+# 
+# summary_df <- data.frame(
+#   Factor = factor_col,
+#   DF_Factor = summary_out[[1]]["Df"][1],
+#   DF_Residuals = summary_out[[1]]["Df"][2],
+#   F_value = summary_out[[1]]["F value"][1],
+#   P_value = p_val,
+#   Shapiro_p = shapiro_p,
+#   Levene_p = levene_p,
+#   Significant = ifelse(p_val < alpha, "✅ Significant", "❌ Not significant"),
+#   stringsAsFactors = FALSE
+# )
+# 
+# return(summary_df)
+
+## this doesn't work to print a nice table
+# library(gridExtra)
+# library(grid)
+# 
+# # Function to save ANOVA summary as image
+# save_anova_summary_image <- function(model, shapiro_p, levene_p, significant_msg, title, filename) {
+#   
+#   # Extract ANOVA summary as data frame
+#   summary_df <- as.data.frame(summary(model)[[1]])
+#   summary_df <- tibble::rownames_to_column(summary_df, "Term")
+#   
+#   # Add assumption tests and significance message as extra rows
+#   extra_info <- data.frame(
+#     Term = c("Shapiro-Wilk p", "Levene p", "Result"),
+#     Df = c("", "", ""),
+#     `Sum Sq` = c("", "", ""),
+#     `Mean Sq` = c("", "", ""),
+#     `F value` = c("", "", ""),
+#     `Pr(>F)` = c(shapiro_p, levene_p, significant_msg),
+#     stringsAsFactors = FALSE
+#   )
+#   
+#   final_df <- rbind(summary_df, extra_info)
+#   
+#   # Open PNG device
+#   png(filename, width = 5000, height = 1200, res = 150)
+#   
+#   # Create table grob
+#   table_grob <- tableGrob(final_df, rows = NULL)
+#   
+#   # Add title
+#   title_grob <- textGrob(title, gp = gpar(fontsize = 18, fontface = "bold"))
+#   
+#   # Arrange and save
+#   grid.arrange(title_grob, table_grob, ncol = 1, heights = c(0.15, 1))
+#   
+#   dev.off()
+# }
+# 
+# # Example usage after running ANOVA
+# res <- run_single_anova(df, response_col = "base_price", factor_col = "state")
+# model <- res$model
+# shapiro_p <- res$shapiro_p
+# levene_p <- res$levene_p
+# significant_msg <- ifelse(res$p_val < 0.05, "✅ Significant", "❌ Not significant")
+# 
+# save_anova_summary_image(model, shapiro_p, levene_p, significant_msg,
+#                          "ANOVA Summary: State", "anova_state_summary.png")
