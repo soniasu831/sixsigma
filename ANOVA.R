@@ -190,9 +190,90 @@ price_per_seat_results <-run_single_anova(df, response_col = "base_price", facto
 # save_anova_summary_image(model, shapiro_p, levene_p, significant_msg,
 #                          "ANOVA Summary: State", "anova_state_summary.png")
 
+# VERSION 1 OF PULLING ANOVA AND TUKEY INTO HTML, WORKED TO PULL ANOVA BUT NOT TUKEY
+# library(texreg)
+# 
+# # Create a named list of all your ANOVA results
+# anova_results <- list(
+#   state = state_results,
+#   source_type = source_results,
+#   purchase_year = purchasey_results,
+#   bus_manufacturer = manufacturer_results,
+#   bus_model = model_results,
+#   bus_type = type_results,
+#   seating_capacity = seating_results,
+#   special_needs_bus = specialneeds_results,
+#   vehicle_dealer = dealer_results,
+#   price_per_seat = price_per_seat_results
+# )
+# 
+# # Loop through each result and create an HTML file
+# for (name in names(anova_results)) {
+#   result <- anova_results[[name]]
+#   
+#   # Safely extract F-statistic and p-value
+#   f_value <- tryCatch({
+#     f <- summary(result$model)[[1]][["F value"]][1]
+#     if (is.null(f) || is.na(f)) NA_real_ else as.numeric(f)
+#   }, error = function(e) NA_real_)
+#   
+#   p_value <- tryCatch({
+#     p <- result$p_val
+#     if (is.null(p) || is.na(p)) NA_real_ else as.numeric(p)
+#   }, error = function(e) NA_real_)
+#   
+#   # Create texreg object
+#   custom_model <- createTexreg(
+#     coef.names = c(paste("Effect of", name)),
+#     coef = c(f_value),
+#     se = c(0),  # Use 0 or a dummy value if SE is not available
+#     pvalues = c(p_value),
+#     gof.names = c("Shapiro-Wilk p", "Levene p"),
+#     gof = c(result$shapiro_p, result$levene_p)
+#   )
+#   
+#   # Save HTML file
+#   htmlreg(
+#     custom_model,
+#     file = paste0("anova_", name, ".html"),
+#     caption = paste("ANOVA Results for", name),
+#     inline.css = TRUE
+#   )
+# }
+# 
+# for (name in names(anova_results)) {
+#   result <- anova_results[[name]]
+#   
+#   f_value <- tryCatch(summary(result$model)[[1]][["F value"]][1], error = function(e) NA_real_)
+#   p_value <- result$p_val
+#   
+#   # Create texreg object
+#   custom_model <- createTexreg(
+#     coef.names = c(paste("Effect of", name)),
+#     coef = c(f_value),
+#     se = c(0),
+#     pvalues = c(p_value),
+#     gof.names = c("Shapiro-Wilk p", "Levene p"),
+#     gof = c(result$shapiro_p, result$levene_p)
+#   )
+#   
+#   # Save HTML file
+#   htmlreg(
+#     custom_model,
+#     file = paste0("anova_", name, ".html"),
+#     caption = paste("ANOVA Results for", name),
+#     inline.css = TRUE
+#   )
+#   
+#   # Print Tukey HSD table if significant
+#   if (!is.na(p_value) && p_value < 0.05) {
+#     cat("\nTukey HSD for", name, ":\n")
+#     print(TukeyHSD(result$model))
+#   }
+# }
+
 library(texreg)
 
-# Create a named list of all your ANOVA results
 anova_results <- list(
   state = state_results,
   source_type = source_results,
@@ -206,36 +287,47 @@ anova_results <- list(
   price_per_seat = price_per_seat_results
 )
 
-# Loop through each result and create an HTML file
 for (name in names(anova_results)) {
   result <- anova_results[[name]]
   
-  # Safely extract F-statistic and p-value
-  f_value <- tryCatch({
-    f <- summary(result$model)[[1]][["F value"]][1]
-    if (is.null(f) || is.na(f)) NA_real_ else as.numeric(f)
-  }, error = function(e) NA_real_)
+  f_value <- tryCatch(summary(result$model)[[1]][["F value"]][1], error = function(e) NA_real_)
+  p_value <- result$p_val
   
-  p_value <- tryCatch({
-    p <- result$p_val
-    if (is.null(p) || is.na(p)) NA_real_ else as.numeric(p)
-  }, error = function(e) NA_real_)
-  
-  # Create texreg object
   custom_model <- createTexreg(
     coef.names = c(paste("Effect of", name)),
     coef = c(f_value),
-    se = c(0),  # Use 0 or a dummy value if SE is not available
+    se = c(0),
     pvalues = c(p_value),
     gof.names = c("Shapiro-Wilk p", "Levene p"),
     gof = c(result$shapiro_p, result$levene_p)
   )
   
-  # Save HTML file
-  htmlreg(
-    custom_model,
-    file = paste0("anova_", name, ".html"),
-    caption = paste("ANOVA Results for", name),
-    inline.css = TRUE
-  )
+  # Write ANOVA summary to a temporary HTML file
+  temp_file <- tempfile(fileext = ".html")
+  htmlreg(custom_model, file = temp_file, caption = paste("ANOVA Results for", name), inline.css = TRUE)
+  anova_html <- paste(readLines(temp_file), collapse = "\n")
+  
+  # Add Tukey HSD if significant
+  tukey_html <- ""
+  if (!is.na(p_value) && p_value < 0.05) {
+    tukey <- TukeyHSD(result$model)
+    tukey_df <- as.data.frame(tukey[[1]])
+    tukey_df$Comparison <- rownames(tukey_df)
+    
+    # Create HTML table
+    tukey_html <- paste0(
+      "<h3>Tukey HSD Results for ", name, "</h3>",
+      "<table border='1' cellpadding='5' cellspacing='0'><tr>",
+      paste0("<th>", colnames(tukey_df), "</th>", collapse = ""),
+      "</tr>",
+      paste(apply(tukey_df, 1, function(row) {
+        paste0("<tr>", paste0("<td>", format(row, digits = 4), "</td>", collapse = ""), "</tr>")
+      }), collapse = ""),
+      "</table>"
+    )
+  }
+  
+  # Combine and write to final HTML file
+  full_html <- paste0("<html><body>", anova_html, tukey_html, "</body></html>")
+  writeLines(full_html, paste0("anova_", name, ".html"))
 }
