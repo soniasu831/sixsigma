@@ -142,6 +142,14 @@ results_table_6 <- run_grouped_anova(
   response_col = "base_price"
 )
 
+# Example 7: Run ANOVA by bus manufacturer within each type; return price/seat
+results_table_7 <- run_grouped_anova(
+  df,
+  group_by = "bus_type",
+  factor_col = "state",
+  response_col = "price_per_seat"
+)
+
 # Install required packages if not already installed
 # install.packages(c("ggplot2", "gridExtra"))
 
@@ -175,3 +183,4 @@ save_table_as_image(results_table_3, "ANOVA by Bus Type within Special Needs", "
 save_table_as_image(results_table_4, "ANOVA by State within Year", "anova_table_4.png")
 save_table_as_image(results_table_5, "ANOVA by Manufacturer within Year", "anova_table_5.png")
 save_table_as_image(results_table_6, "ANOVA by Bus Type within State", "anova_table_6.png")
+save_table_as_image(results_table_7, "ANOVA by Price/Seat for Bus Manufacturer within type", "anova_table_7.png")
