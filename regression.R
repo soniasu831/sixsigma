@@ -32,7 +32,7 @@ dat_f = dat %>% mutate(
 # helper function to display model info
 tidier = function(model){
   model %>% tidy(conf.int = TRUE, conf.level = 0.95) %>% 
-    select(term, estimate, p.value) %>%
+    select(term, estimate, p.value, conf.low, conf.high) %>%
     arrange(p.value)
 }
 
@@ -118,13 +118,40 @@ dat_f %>% lm(formula = base_price ~ bus_type) %>% tidier()
 
 dat_f %>% lm(formula = base_price ~ seating_capacity) %>% tidier()
 
-# # A tibble: 2 × 3
-#   term             estimate  p.value
-#   <chr>               <dbl>    <dbl>
-# 1 (Intercept)       237471. 1.14e-63
-# 2 seating_capacity    1869. 1.01e-28
+# # A tibble: 2 × 5
+#   term             estimate  p.value conf.low conf.high
+#   <chr>               <dbl>    <dbl>    <dbl>     <dbl>
+# 1 (Intercept)       237471. 1.14e-63  220637.   254305.
+# 2 seating_capacity    1869. 1.01e-28    1599.     2139.
 
+fit = dat %>% lm(formula = base_price ~ seating_capacity)
+eq <- substitute(
+  italic(y) == a + b %.% italic(x)*","~~italic(R)^2~"="~r2,
+  list(
+    a = format(as.numeric(coef(fit)[1]), digits = 2),
+    b = format(as.numeric(coef(fit)[2]), digits = 2),
+    r2 = format(as.numeric(summary(fit)$r.squared), digits = 3)
+  )
+)
 
+g = dat %>% ggplot(mapping = aes(x = seating_capacity, y = base_price))+
+  geom_point() +
+  labs(x = "Seating Capacity", 
+      y = "Base Price ($)",
+      subtitle = "Base Price vs Seating Capacity"
+  )  +
+  theme_classic() +
+  geom_smooth(method = "lm", se = FALSE) + # se = FALSE removes extra stuff 
+  geom_text(
+    x = Inf, y = -Inf,
+    label = as.character(as.expression(eq)),
+    hjust = 1.1, vjust = -1,
+    parse = TRUE
+  )
+
+g
+
+ggsave('price_vs_seating.png', plot = g, width = 6.5, height = 4, dpi = 300)
 
 # %% type a htmlreg() #####
 

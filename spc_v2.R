@@ -105,10 +105,10 @@ ggxbar_cat = function(x,y, xlab = "Subgroups", ylab = "Average", subtitle = ""){
 
   gg = ggplot() +
     geom_hline(data = stat_t, mapping = aes(yintercept = xbbar), color = "lightgrey") +
-    geom_ribbon(
-      data = stat_s, 
-      mapping = aes(x = x, ymin = lower, ymax = upper),
-      fill = "steelblue", alpha = 0.2) +
+    # geom_ribbon(
+    #   data = stat_s, 
+    #   mapping = aes(x = x, ymin = lower, ymax = upper),
+    #   fill = "steelblue", alpha = 0.2) +
     geom_point(
       data = stat_s,
       mapping = aes(x = x, y = xbar), size = 5
@@ -146,8 +146,8 @@ g2
 g3
 
 ggsave('bus_type_a.png', plot = g1, width = 6.5, height = 4, dpi = 300)
-ggsave('bus_type_c.png', plot = g2, width = 6.5, height = 4, dpi = 300)
-ggsave('bus_type_d.png', plot = g3, width = 6.5, height = 4, dpi = 300)
+ggsave('bus_type_c.png', plot = g2, width = 6.5, height = 3, dpi = 300)
+ggsave('bus_type_d.png', plot = g3, width = 6.5, height = 2.5, dpi = 300)
 
 
 dat_A$price_per_seat %>% mean()
